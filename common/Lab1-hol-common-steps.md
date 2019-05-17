@@ -1,14 +1,39 @@
-# ハンズオンご案内
+# OCI のトライアル環境へのアクセスと環境セットアップ(Lab.1)
 
 ## はじめに
 
+このハンズオンは、Oracle Autonomous DBを利用した各言語での開発に必要な環境設定方法の確認と動作の体験をゴールとしています。
 
-当ハンズオンでは、Oracle Autonomous DBを利用した各言語での開発に必要な環境設定方法の確認と動作の体験をゴールとしております。
+
+# OCI のトライアル環境へのアクセス
+
+まず、トライアル環境へのアクセスを行います。
+
+### 作業ステップ
+1. 事前にOracle Code Tokyo主催者より、皆さま宛にOracle Cloud Infrastructure のトライアル環境に関するシステムメールが送付されているはずです。
+もしそのメールに書かれている手順(環境のアクティベーション)が完了していない方は、この場でメールの指示に従って処理を完了してください。
+
+1. セットアップが完了している方は、以下のURLにアクセスしてください
+
+```text
+https://console.us-ashburn-1.oraclecloud.com
+```
+
+1. 表示されたログイン画面の Cloud Tenant に、皆さま向けに払い出されたクラウドのテナント名(Identity Domain名)を入力し、Continue ボタンを押します
+
+1. 左側の Single Sign-On(SSO)というセクションの側の **Continue** というボタンを押します
+
+1. **ユーザー名** (皆様のメールアドレスのはずです) と **パスワード** を入力し、サイン・イン ボタンを押します
+パスワードは、トライアル環境のアクティベーション後に一度でもログインしている場合には、その初回アクセス時にみなさまが設定されています。もしアクティベーション後に一度もログインしていない場合は、アクティベーション時に送付されたメールに書かれていますので、それを使用してください。
+
+![](images/Oracle_Cloud_Infrastructure_24.png)
+
+1. 以下のようなコンソールが表示されたら、ログインが成功しています。
+
+![](images/Oracle_Cloud_Infrastructure_25.png)
 
 
-# OCI のトライアル環境へのアクセスと環境セットアップ(Lab.1)
-
-## アプリケーションの実行環境となる仮想マシンのためのベースとなるイメージのインポート
+## アプリケーションの実行環境イメージのインポート
 
 今回のハンズオンでは、予めハンズオン主催者側で作成しておいた Oracle Linux 7 の仮想マシンイメージを使用して、アプリケーションの実行環境を作成します。
 その利用にあたり、まずはその仮想マシンイメージをみなさまのそれぞれの環境にカスタム・イメージとしてインポートする作業を行います。この作業には少し時間がかかるため、最初に行っておくことで、ハンズオンがスムーズに進むようになります。
@@ -21,10 +46,11 @@
     - **名前** - 任意の文字列
     - **オペレーティング・システム** - Linuxを選択
     - **オブジェクト・ストレージURL** - 以下の文字列をコピー&ペースト
-        `https://objectstorage.ap-tokyo-1.oraclecloud.com/n/orasejapan/b/code19-coding-hol/o/code19-coding-hol`
+`https://objectstorage.ap-tokyo-1.oraclecloud.com/n/orasejapan/b/code19-coding-hol/o/code19-coding-hol`
+
     - **イメージ・タイプ** - OCI を選択
     - **起動モード** - グレーアウトされるので選択不要
-    
+
 ![](images/Oracle_Cloud_Infrastructure_2.png)
 
 
@@ -70,13 +96,11 @@
 1. コンソールメニューから **ネットワーキング(Networking) → 仮想クラウド・ネットワーク(Virtual Cloud Networks)** を選択し、**仮想クラウド・ネットワークの作成** ボタンを押します
 
 1. 立ち上がったウィンドウに以下の項目を入力し、下部の **仮想クラウド・ネットワークの作成** ボタンを押します
-    - **名前** - 任意[^1] (画面では TutorialVCN と入力しています)
+    - **名前** - 任意 (画面では TutorialVCN と入力しています)
     - **コンパートメントに作成** - デフォルトで現在のコンパートメントが選択されています。もし別のコンパートメントに作成したい場合は選択します。
     - **仮想クラウド・ネットワークおよび関連リソースの作成** - ラジオボタンを選択します。このオプションを選択すると仮想クラウド・ネットワーク(VCN)と付随するネットワーク・コンポーネントが事前定義済のテンプレートに従って作成され、簡単にクラウド上の仮想ネットワークの利用を開始することができます。
 
-    [^1]:名前は識別しやすい名前をつけてください。VNC名は一意である必要はありませんが、同じ名前をつけた場合にコンソールでの識別が難しくなります。一度つけた名前は、コンソールからは名前を変更できません。(APIを利用すると名前を変更できます)
-
-![](images/Oracle_Cloud_Infrastructure_12.png)
+    ![](images/Oracle_Cloud_Infrastructure_12.png)
 
 
 1. すべてのアクションが正常に実行されたことをメッセージで確認し **閉じる** ボタンを押しウィンドウを閉じます
@@ -84,33 +108,36 @@
 1. コンソール上に作成した仮想クラウド・ネットワークが表示され、状態が **使用可能** になっていることを確認します
 
 
-
-
 以上で仮想クラウド・ネットワークの作成は完了です。
 
 
+## 仮想ネットワーク(VCN)のファイアウォールに、httpアクセス用のポートを解放する
 
-
-## DBへのデータロード(Optional)
-
-※　このプロセスは、言語別の講師から指定があったときに実行してください。
-
-アプリケーションの実行環境インスタンスを作成する前に、先ほど作成した Autnomous Database に、サンプルのスキーマとデータをロードしてしまいましょう。
-Autonomous Database は、データベースのソフトウェアとしては通常の Oracle Database 18ｃ と同じように使用できますので、もし Oracle Database に詳しい方であればいつもの方法でデータをロードすることができますが、今回はクラウド上のコンソールに付属するツールを使ってデータを取り込んでみましょう。
+作成したばかりのVCNは、セキュリティ強化のために外部からのhttp関連のポートが全て閉じられています。この先のステップで、このVCNの中にWebアプリケーションを立ち上げますので、この時点で予め必要となるポートを開いておきます。
 
 ### 作業ステップ
+1. コンソールメニューから **ネットワーキング(Networking) → 仮想クラウド・ネットワーク(Virtual Cloud Networks)** を選択し、先ほど作成したVCN名のリンクをクリックします。
 
-1. SQL DeveloperまたはOracle MLの画面を開きます
-2. 講師の案内もしくはドキュメントの記載をトレースします
+1. 左下の **リソース** メニューから **セキュリティ・リスト** を選択し、その右側のセキュリティ・リスト一覧の中から **Default Security List for XXX** という名前のリンクをクリックします。
 
-# Autonomous Databaseについて
+1. **イングレス・ルールの追加** ボタンを押し、立ち上がったウィンドウに以下の情報を入力し、**イングレス・ルールの追加** ボタンを押します。
 
-イメージインポート完了待ちの間、講師よりプレゼンテーションを行います。
+    - **ソース・タイプ** : CIDR
+    - **ソースCIDR** : 0.0.0.0/0
+    - **IPプロトコル** : TCP
+    - **ソースポート範囲** : 空欄のまま
+    - **宛先ポート範囲** : _※使用するフレームワーク毎に設定_
+        - **Ruby on Rails** : 3000
+        - **Django** : 8000
+        - **Laravel** :8080
+        - **Spring Boot** : 80
+
+    ![](images/Oracle_Cloud_Infrastructure_26.png)
 
 
 ## アプリケーション実行用のインスタンス作成と Autonomous Database への接続確認
 
-
+カスタム・イメージのインポートがそろそろ完了している頃なので、そのイメージを使って仮想マシン・インスタンスを立ち上げましょう。
 
 ### 作業ステップ
 
@@ -131,18 +158,15 @@ Autonomous Database は、データベースのソフトウェアとしては通
     - **SSHキーの追加** - **ファイルの選択** ボタンを押して予め作成しておいた鍵ペアのうち公開鍵(通常は id_rsa.pub )を選択
     - **仮想クラウド・ネットワーク** - 先ほどのステップで作成したVCNを選択
     - **サブネット** - 任意のパブリック・サブネットを選択
-    
-
 
 1. インスタンスの作成処理がバックグラウンドで作成されます。しばらくするとインスタンスの状態が **実行中** になり、使用できるようになります
 
     ![](images/Oracle_Cloud_Infrastructure_5.png)
 
 
-1. 作成したインスタンスにSSHでアクセス確認します。
+1. 作成したインスタンスにSSHで接続確認をします。
 インスタンスの詳細画面の **プライマリVNIC情報** セクションにある **パブリックIPアドレス** 欄のIPアドレスをコピーし、そこに対してローカルのPCからSSHでアクセスします。アクセスする際の認証には、インスタンスを作成する際に登録したSSH公開鍵のペアとなる秘密鍵(通常はid_rsaという名前です)を使用してください。秘密鍵にパスコードを指定している場合はそちらも適切に指定してください。
-
-アクセスするユーザーは　opc  です。
+アクセスするユーザーは *opc* です。
 
 ```text
 localpc% ssh -i <your_secret_key> opc@<your_innstance_address>
@@ -150,66 +174,64 @@ localpc% ssh -i <your_secret_key> opc@<your_innstance_address>
 remote%
 ```
 
+2. 次に、仮想マシンインスタンスに、Autnomous Database へのアクセスを行うためのクライアント資格証明(Wallet)を配置します。
+コンソールメニューから **Autonomous Transaction Processing** を選択し、先ほど作成した Autnomous Database の名前のリンクをクリックします。
 
+3. **DB接続** ボタンを押します
 
-2. アクセスしたインスタンスで、以下のようにWalletファイルを配置します。
+4. 立ち上がったウィンドウの **クライアント資格証明(ウォレット)のダウンロード** セクションにある **ダウンロード** ボタンを押します
 
+    ![](images/Oracle_Cloud_Infrastructure_10.png)
 
-![](images/Oracle_Cloud_Infrastructure_10.png)
+5. **パスワード** と **パスワード確認** に適切な値を入力し、zipファイル形式のWalletをローカルマシンにダウンロードします。
 
+6. 先ほど作成したアプリケーション用の仮想マシンに、Walletファイルを配置します。
 
-
-
-Walletのコピー
 ```sh
 localpc% scp -i <YourIdentitySecretKey> <YourWallet>.zip opc@<your_innstance_address>:
 ```
 
-Walletの配置
+7. Walletファイルを移動し、解凍します。
+
 ```text
 remote% sudo cp <YourWallet>.zip /usr/local/etc/
 remote% cd /usr/local/etc/
 remote% sudo unzip <YourWallet>.zip
 ```
 
-3. sqlnet.oraのWallet配置先の記載を現状にあわせて修正します。
+8. 解答したディレクトの中にある sqlnet.ora ファイルを、Wallet配置先の記載を現状にあわせて修正します。
 
 ```text
 remote% sudo cp sqlnet.ora sqlnet.ora.org && cat sqlnet.ora.org | sudo sh -c "sed -e 'N;s/\?\/network\/admin/\/usr\/local\/etc/g' > sqlnet.ora"
 ```
 
-参考：環境変数設定（今回のインスタンスでは事前設定済み）
-
-- ファイルの配置先は環境変数TNS_ADMINで設定します
-- LD_LIBRARY_PATHにOracle client libの位置を与えます。
-
-※ MacOSの場合はLD_LIBRARY_PATHの設定が制限されていますので、インスタンスまたはDocker上Linuxでの試用を推奨します。
+9. (オプション : この手順は今回の環境では事務局側で設定済です)
+
+    - 環境変数TNS_ADMINに、Walletファイルの配置先を設定します
+    - LD_LIBRARY_PATHにOracle Client の中の lib ディレクトリの位置を与えます。
+※ MacOSの場合はLD_LIBRARY_PATHの設定が制限されていますので、今回のようにクラウド上のインスタンスを使用するか、または Docker上のLinuxコンテナの使用を推奨します。
 
 ```text
-ハンズオン環境設定済み：
 echo 'export LD_LIBRARY_PATH="/usr/lib/oracle/18.5/client64/lib"' >> ~/.bash_profile
 echo 'export TNS_ADMIN="/usr/local/etc"' >> ~/.bash_profile
 ```
 
-4. sqlplusからのAutonomous DB接続確認
+10. sql*plus を使って、Autonomous DB への接続確認をします。
+作成したAutonomous DBのインスタンスの **TNS名** を確認し、"TP" という名前ので終わるTNS名をメモします。TPは、一般トランザクション処理用に予め用意されたデータベース・サービスです。
 
+    ![](images/Oracle_Cloud_Infrastructure_9.png)
 
+11. sql*plus を使って Autonomous Database に接続します。
 
-作成したAutonomous DBのインスタンスのTNS nameを確認し、TP用のTNS名をメモします。
-
-![](images/Oracle_Cloud_Infrastructure_9.png)
-
-
-sqlplusのコマンドで、
-
-例：
 ```text
 remote% /usr/lib/oracle/18.3/client64/bin/sqlplus admin@<インスタンスTNS名で_tpで終わるもの>
 
 Password: Oracle123456(インスタンス作成時にadmin設定したパスワード）
 ```
 
+12. プロンプトが帰ってきたら、アプリケーション用インスタンスから Autonomous Database への接続が無事に成功しています。
 
-## 各アプリケーション・フレームワークごとの作業(Lab.2)
 
-各言語ごとのグループに別れて開始してください
+
+
+ここまでで、言語共通の作業は完了です。このあとは Lab.2 に進み、各言語ごとのグループに別れて作業を行っていきます。
